@@ -52,4 +52,6 @@ jobs:
 
     - name: Perform CodeQL Analysis
       uses: ./my-queries
+      with:
+        category: "/language:${{matrix.language}}"
 
