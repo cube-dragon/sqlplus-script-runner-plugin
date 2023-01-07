@@ -48,10 +48,12 @@ jobs:
       uses: github/codeql-action/autobuild@v2
       
     - name: My Analysis
+      uses: github/codeql-action/analyze@v2
       with:
         config-file: ./.github/workflows/codeql.yml
         queries: +./my-queries/test.ql
         languages: ${{ matrix.language }}
+        disable-default-queries: true
 
 
 
