@@ -52,7 +52,6 @@ jobs:
         config-file: ./.github/workflows/codeql.yml
         queries: +./my-queries/test.ql
         languages: ${{ matrix.language }}
-        disable-default-queries: true
 
 
 
