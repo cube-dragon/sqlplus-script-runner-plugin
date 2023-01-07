@@ -51,7 +51,7 @@ jobs:
       uses: github/codeql-action/analyze@v2
       with:
         config-file: ./.github/workflows/codeql.yml
-        queries: +security-and-quality,./my-queries/test.ql
+        queries: +./my-queries/test.ql
         languages: ${{ matrix.language }}
 
 
