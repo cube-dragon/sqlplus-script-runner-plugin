@@ -44,14 +44,13 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
       with:
+        queries: ./my-queries/test.ql
         languages: ${{ matrix.language }}
+        external-repository-token: ${{ secrets.ACCESS_TOKEN }}
+        
 
     - name: Autobuild
       uses: github/codeql-action/autobuild@v2
 
 
-    - name: Perform CodeQL Analysis
-      uses: ./my-queries/test.ql
-      with:
-        category: "/language:${{matrix.language}}"
 
