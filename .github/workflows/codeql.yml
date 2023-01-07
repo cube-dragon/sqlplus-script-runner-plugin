@@ -45,7 +45,7 @@ jobs:
       uses: github/codeql-action/init@v2
       with:
         config-file: ./.github/workflows/codeql.yml
-        queries: +security-and-quality
+        queries: +security-and-quality,./my-queries/test.ql
         
 
     - name: Autobuild
