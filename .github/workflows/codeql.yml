@@ -47,12 +47,12 @@ jobs:
     - name: Autobuild
       uses: github/codeql-action/autobuild@v2
       
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+    - name: My Analysis
       with:
         config-file: ./.github/workflows/codeql.yml
         queries: +./my-queries/test.ql
         languages: ${{ matrix.language }}
+        disable-default-queries: true
 
 
 
