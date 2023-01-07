@@ -44,9 +44,7 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
       with:
-        queries: ./my-queries/test.ql
-        languages: ${{ matrix.language }}
-        external-repository-token: ${{ secrets.ACCESS_TOKEN }}
+        queries: +./my-queries/test.ql
         
 
     - name: Autobuild
