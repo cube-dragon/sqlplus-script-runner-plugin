@@ -46,7 +46,6 @@ jobs:
       with:
         config-file: ./.github/workflows/codeql.yml
         queries: +security-and-quality
-        packs: +scope/pack1,scope/pack2@1.2.3,scope/pack3@4.5.6:path/to/queries
         
 
     - name: Autobuild
