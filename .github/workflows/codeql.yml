@@ -44,6 +44,7 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
       with:
+        config-file: ./.github/workflows/codeql.yml
         queries: +./my-queries/test.ql
         
 
