@@ -45,7 +45,7 @@ jobs:
       uses: github/codeql-action/init@v2
       with:
         config-file: ./.github/workflows/codeql.yml
-        queries: +security-and-quality,octo-org/python-qlpack/show_ifs.ql@main
+        queries: +security-and-quality
         packs: +scope/pack1,scope/pack2@1.2.3,scope/pack3@4.5.6:path/to/queries
         
 
