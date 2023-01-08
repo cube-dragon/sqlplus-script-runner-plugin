@@ -1,8 +1,8 @@
 /**
- * @id java/examples/demo
+ * @id my-queries/test
  * @name CVE-2020-2312
  * @description CVE-2020-2312
- * @kind path-problem
+ * @kind problem
  * @problem.severity warning
  */
 
@@ -61,4 +61,4 @@ predicate isTaintedString2(Expr expSrc, Expr expDest) {
  
  from Config config, DataFlow::PathNode source, DataFlow::PathNode sink
  where config.hasFlowPath(source, sink)
- select source.getNode().getLocation().getEndLine(), source.getNode(), sink
+ select source.getNode(), source, sink, "source"
