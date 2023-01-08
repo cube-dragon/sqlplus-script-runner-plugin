@@ -1,8 +1,5 @@
 name: codeql/java-queries
 version: 0.5.1-dev
-groups: 
-  - java
-  - queries
 extractor: java
 dependencies:
-  codeql/java-all: ~0.2.0
+  codeql/java-all: "*"
