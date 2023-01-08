@@ -13,4 +13,4 @@
    logCall.getName() = "print" and
    callResult = method.getACallSite(logCall) and
    callResult.getLocation().getEndLine() = 411
- select callResult.getArgument(0), "method"
+ select callResult.getArgument(0), "method1"
