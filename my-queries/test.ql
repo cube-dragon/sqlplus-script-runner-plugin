@@ -61,4 +61,4 @@ predicate isTaintedString2(Expr expSrc, Expr expDest) {
  
  from Config config, DataFlow::PathNode source, DataFlow::PathNode sink
  where config.hasFlowPath(source, sink)
- select sink.getNode(), source, sink, "source"
+ select sink.getNode(), source, sink, "asda"
