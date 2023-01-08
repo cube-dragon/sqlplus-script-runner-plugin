@@ -1,5 +1,5 @@
 /**
- * @id java/examples/getLogger
+ * @id java/examples/demo
  * @name CVE-2020-2312
  * @description CVE-2020-2312
  * @kind path-problem
