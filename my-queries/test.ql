@@ -4,7 +4,5 @@
  */
 import java
 
-from MethodAccess call, Method method
-where
-  call.getMethod() = method
+from Method method
 select method.getName(), "name"
