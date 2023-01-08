@@ -4,3 +4,5 @@ groups:
   - java
   - queries
 extractor: java
+dependencies:
+  codeql/java-all: ~0.2.0
