@@ -3,7 +3,7 @@
  * @name CVE-2020-2312
  * @description CVE-2020-2312
  * @kind path-problem
- * @problem.severity warning
+ * @problem.severity error
  */
 
  import java
