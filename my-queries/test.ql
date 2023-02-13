@@ -12,9 +12,49 @@
  */
 
  import java
- import semmle.code.java.security.SensitiveLoggingQuery
+ private import semmle.code.java.dataflow.ExternalFlow
+ import semmle.code.java.dataflow.TaintTracking
+ import semmle.code.java.security.SensitiveActions
+ import semmle.code.java.frameworks.android.Compose
+ import DataFlow
  import PathGraph
  
+ class CredentialExpr extends Expr {
+  CredentialExpr() {
+    exists(Variable v | this = v.getAnAccess() |
+      v.getName().regexpMatch(getCommonSensitiveInfoRegex()) and
+      not this instanceof CompileTimeConstantExpr
+    )
+  }
+}
+
+/** An instantiation of a (reflexive, transitive) subtype of `java.lang.reflect.Type`. */
+private class TypeType extends RefType {
+  pragma[nomagic]
+  TypeType() {
+    this.getSourceDeclaration().getASourceSupertype*().hasQualifiedName("java.lang.reflect", "Type")
+  }
+}
+
+/** A data-flow configuration for identifying potentially-sensitive data flowing to a log output. */
+class SensitiveLoggerConfiguration extends TaintTracking::Configuration {
+  SensitiveLoggerConfiguration() { this = "SensitiveLoggerConfiguration" }
+
+  override predicate isSource(DataFlow::Node source) { source.asExpr() instanceof CredentialExpr }
+
+  override predicate isSink(DataFlow::Node sink) { any() }
+
+  override predicate isSanitizer(DataFlow::Node sanitizer) {
+    sanitizer.asExpr() instanceof LiveLiteral or
+    sanitizer.getType() instanceof PrimitiveType or
+    sanitizer.getType() instanceof BoxedType or
+    sanitizer.getType() instanceof NumberType or
+    sanitizer.getType() instanceof TypeType
+  }
+
+  override predicate isSanitizerIn(Node node) { this.isSource(node) }
+}
+
  from SensitiveLoggerConfiguration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
  where cfg.hasFlowPath(source, sink)
  select sink.getNode(), source, sink, "This $@ is written to a log file.", source.getNode(),
