@@ -1,36 +1,37 @@
 /**
  * @id java/examples/getLogger
  * @name CVE-2020-2312
- * @description getLogger.print
+ * @description CVE-2020-2312
+ * @kind path-problem
+ * @problem.severity warning
+ * @security-severity 7.5
+ * @precision medium
+ * @id java/sensitive-log
  */
 
  import java
- private import semmle.code.java.dataflow.ExternalFlow
- import semmle.code.java.dataflow.TaintTracking
  import semmle.code.java.dataflow.FlowSources
  import semmle.code.java.security.QueryInjection
  import DataFlow::PathGraph
  
  //打通了args.toList()，可以追溯args这个变量，但是到不了常量，因为add()这个方法codeql检测不到
  predicate isTaintedString1(Expr expSrc, Expr expDest) {
-  exists(Method method, MethodAccess call, MethodAccess call1 |
-     expSrc = call1 and 
+  exists(Method method, MethodAccess call|
+     expSrc = call.getQualifier() and 
      expDest = call and 
      call.getMethod() = method and 
-     method.hasName("toList") and 
-     method.getDeclaringType().toString() = "ArgumentListBuilder" and 
-     call1.getType().toString() = "ArgumentListBuilder") 
+     method.hasName("toList")
+     ) 
 }
 
 //打通了args.add()，可以追溯到各个常量，不过出来的的结果有点多，默认先注释
 predicate isTaintedString2(Expr expSrc, Expr expDest) {
-  exists(Method method, MethodAccess call, MethodAccess call1 |
-     expSrc = call1.getArgument(0) and 
-     expDest = call and 
-     call.getMethod() = method and 
-     method.hasName("add") and 
-     method.getDeclaringType().toString() = "ArgumentListBuilder" and 
-     call1.getArgument(0).getType().toString() = "String") 
+  exists(Method method, MethodAccess call|
+     expSrc = call.getArgument(0) and //获得add方法调用的第一个参数
+     expDest = call.getQualifier() and //获得args
+     call.getMethod() = method and
+     method.hasName("add")
+     )
 }
  
  private class LoggerSink extends DataFlow::Node {
@@ -55,8 +56,8 @@ predicate isTaintedString2(Expr expSrc, Expr expDest) {
 
    override predicate isAdditionalTaintStep(DataFlow::Node node1, DataFlow::Node node2) {
     isTaintedString1(node1.asExpr(), node2.asExpr())
-   //  or
-   //  isTaintedString2(node1.asExpr(), node2.asExpr())
+    or
+    isTaintedString2(node1.asExpr(), node2.asExpr())
   }
  }
  
