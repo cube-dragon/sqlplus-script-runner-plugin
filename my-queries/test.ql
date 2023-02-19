@@ -42,20 +42,10 @@ class SensitiveLoggerConfiguration extends TaintTracking::Configuration {
 
   override predicate isSource(DataFlow::Node source) { source.asExpr() instanceof CredentialExpr }
 
-  override predicate isSink(DataFlow::Node sink) { sinkNode(sink, "logging") }
+  override predicate isSink(DataFlow::Node sink) { any() }
 
-  override predicate isSanitizer(DataFlow::Node sanitizer) {
-    sanitizer.asExpr() instanceof LiveLiteral or
-    sanitizer.getType() instanceof PrimitiveType or
-    sanitizer.getType() instanceof BoxedType or
-    sanitizer.getType() instanceof NumberType or
-    sanitizer.getType() instanceof TypeType
-  }
-
-  override predicate isSanitizerIn(Node node) { this.isSource(node) }
 }
 
  from SensitiveLoggerConfiguration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
  where cfg.hasFlowPath(source, sink)
- select sink.getNode(), source, sink, "This $@ is written to a log file.", source.getNode(),
-   "potentially sensitive information"
+ select source.getNode(), source, sink, "source"
