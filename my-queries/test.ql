@@ -12,50 +12,59 @@
  */
 
  import java
- private import semmle.code.java.dataflow.ExternalFlow
- import semmle.code.java.dataflow.TaintTracking
- import semmle.code.java.security.SensitiveActions
- import semmle.code.java.frameworks.android.Compose
- import DataFlow
- import PathGraph
+ import semmle.code.java.dataflow.FlowSources
+ import semmle.code.java.security.QueryInjection
+ import DataFlow::PathGraph
  
- class CredentialExpr extends Expr {
-  CredentialExpr() {
-    exists(Variable v | this = v.getAnAccess() |
-      v.getName().regexpMatch(getCommonSensitiveInfoRegex()) and
-      not this instanceof CompileTimeConstantExpr
-    )
+ 
+ 
+class LoggerSink extends DataFlow::Node {
+    LoggerSink() {
+        exists( Method method, Callable logCall, Call callResult| 
+            method.hasName("run") and
+            method.getDeclaringType().hasQualifiedName("org.jenkinsci.plugins.sqlplus.script.runner", "SQLPlusRunner") and
+            method.getACallee() = logCall and
+            logCall.getName() = "print" and
+            callResult = method.getACallSite(logCall) and
+            callResult.getLocation().getEndLine() = 411 and
+            this.asExpr() = callResult.getArgument(0))
+    }
+ }
+
+ class Config extends TaintTracking::Configuration {
+   Config() { this = "loggerPrint" }
+
+   //打通了args.toList()，可以追溯args这个变量，但是到不了常量，因为add()这个方法codeql检测不到
+   predicate isTaintedString1(Expr expSrc, Expr expDest) {
+   exists(Method method, MethodAccess call|
+      expSrc = call.getQualifier() and 
+      expDest = call and 
+      call.getMethod() = method and 
+      method.hasName("toList")
+      ) 
+ }
+ 
+ //打通了args.add()，可以追溯到各个常量，不过出来的的结果有点多，默认先注释
+ predicate isTaintedString2(Expr expSrc, Expr expDest) {
+   exists(Method method, MethodAccess call|
+      expSrc = call.getArgument(0) and //获得add方法调用的第一个参数
+      expDest = call.getQualifier() and //获得args
+      call.getMethod() = method and
+      method.hasName("add")
+      )
+ }
+   override predicate isSource(DataFlow::Node src) { any() }
+ 
+   override predicate isSink(DataFlow::Node sink) { sink instanceof LoggerSink }
+
+   override predicate isAdditionalTaintStep(DataFlow::Node node1, DataFlow::Node node2) {
+    isTaintedString1(node1.asExpr(), node2.asExpr())
+    or
+    isTaintedString2(node1.asExpr(), node2.asExpr())
   }
-}
-
-/** An instantiation of a (reflexive, transitive) subtype of `java.lang.reflect.Type`. */
-private class TypeType extends RefType {
-  pragma[nomagic]
-  TypeType() {
-    this.getSourceDeclaration().getASourceSupertype*().hasQualifiedName("java.lang.reflect", "Type")
-  }
-}
-
-/** A data-flow configuration for identifying potentially-sensitive data flowing to a log output. */
-class SensitiveLoggerConfiguration extends TaintTracking::Configuration {
-  SensitiveLoggerConfiguration() { this = "SensitiveLoggerConfiguration" }
-
-  override predicate isSource(DataFlow::Node source) { source.asExpr() instanceof CredentialExpr }
-
-  override predicate isSink(DataFlow::Node sink) { any() }
-
-  override predicate isSanitizer(DataFlow::Node sanitizer) {
-    sanitizer.asExpr() instanceof LiveLiteral or
-    sanitizer.getType() instanceof PrimitiveType or
-    sanitizer.getType() instanceof BoxedType or
-    sanitizer.getType() instanceof NumberType or
-    sanitizer.getType() instanceof TypeType
-  }
-
-  override predicate isSanitizerIn(Node node) { this.isSource(node) }
-}
-
- from SensitiveLoggerConfiguration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
- where cfg.hasFlowPath(source, sink)
- select sink.getNode(), source, sink, "This $@ is written to a log file.", source.getNode(),
-   "potentially sensitive information"
+ }
+ 
+ 
+ from Config config, DataFlow::PathNode source, DataFlow::PathNode sink
+ where config.hasFlowPath(source, sink)
+ select sink.getNode(), source, sink, "source"
